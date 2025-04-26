@@ -50,4 +50,4 @@ targets: [
 
 ## Acknowledgements
 
-- [swift-otel](https://github.com/swift-otel/swift-otel): The core processing and exporting logic is heavily adapted from the swift-otel project.
+- [swift-otel](https://github.com/swift-otel/swift-otel): The core processing and exporting logic is heavily adapted from the swift-otel project. See the [LICENSE](https://github.com/swift-otel/swift-otel/blob/main/LICENSE.txt) for more details.
