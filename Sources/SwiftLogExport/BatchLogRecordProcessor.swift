@@ -4,28 +4,31 @@ import Logging
 import ServiceLifecycle
 
 /// A log processor that batches logs and forwards them to a configured exporter.
-@_spi(Logging)
-public actor BatchLogRecordProcessor<Exporter: LogRecordExporter, Clock: _Concurrency.Clock>:
+
+public actor BatchLogRecordProcessor<RecordType, Exporter, Clock: _Concurrency.Clock>:
     LogRecordProcessor,
     Service,
     CustomStringConvertible
-    where Clock.Duration == Duration
-{
+where RecordType: LogRecord, Exporter: LogRecordExporter<RecordType>, Clock.Duration == Duration {
+    public typealias T = RecordType
+
     public nonisolated let description = "BatchLogRecordProcessor"
 
-    internal /* for testing */ private(set) var buffer: Deque<LogRecord>
+    internal /* for testing */ private(set) var buffer: Deque<RecordType>
 
     private let exporter: Exporter
     private let configuration: BatchLogRecordProcessorConfiguration
     private let clock: Clock
     private let logger = Logger(label: "BatchLogRecordProcessor")
-    private let logStream: AsyncStream<LogRecord>
-    private let logContinuation: AsyncStream<LogRecord>.Continuation
+    private let logStream: AsyncStream<RecordType>
+    private let logContinuation: AsyncStream<RecordType>.Continuation
     private let explicitTickStream: AsyncStream<Void>
     private let explicitTick: AsyncStream<Void>.Continuation
 
     @_spi(Testing)
-    public init(exporter: Exporter, configuration: BatchLogRecordProcessorConfiguration, clock: Clock) {
+    public init(
+        exporter: Exporter, configuration: BatchLogRecordProcessorConfiguration, clock: Clock
+    ) {
         self.exporter = exporter
         self.configuration = configuration
         self.clock = clock
@@ -35,11 +38,11 @@ public actor BatchLogRecordProcessor<Exporter: LogRecordExporter, Clock: _Concur
         (logStream, logContinuation) = AsyncStream.makeStream()
     }
 
-    public nonisolated func onEmit(_ record: inout LogRecord) {
+    public nonisolated func onEmit(_ record: inout RecordType) {
         logContinuation.yield(record)
     }
 
-    private func _onLog(_ log: LogRecord) {
+    private func _onLog(_ log: RecordType) {
         buffer.append(log)
 
         if buffer.count == configuration.maximumQueueSize {
@@ -48,7 +51,8 @@ public actor BatchLogRecordProcessor<Exporter: LogRecordExporter, Clock: _Concur
     }
 
     public func run() async throws {
-        let timerSequence = AsyncTimerSequence(interval: configuration.scheduleDelay, clock: clock).map { _ in }
+        let timerSequence = AsyncTimerSequence(interval: configuration.scheduleDelay, clock: clock)
+            .map { _ in }
         let mergedSequence = merge(timerSequence, explicitTickStream).cancelOnGracefulShutdown()
 
         await withTaskCancellationOrGracefulShutdownHandler {
@@ -81,7 +85,7 @@ public actor BatchLogRecordProcessor<Exporter: LogRecordExporter, Clock: _Concur
     public func forceFlush() async throws {
         let chunkSize = Int(configuration.maximumExportBatchSize)
         let batches = stride(from: 0, to: buffer.count, by: chunkSize).map {
-            buffer[$0 ..< min($0 + Int(configuration.maximumExportBatchSize), buffer.count)]
+            buffer[$0..<min($0 + Int(configuration.maximumExportBatchSize), buffer.count)]
         }
 
         if !buffer.isEmpty {
@@ -123,12 +127,11 @@ public actor BatchLogRecordProcessor<Exporter: LogRecordExporter, Clock: _Concur
         }
     }
 
-    private func export(_ batch: some Collection<LogRecord> & Sendable) async {
+    private func export(_ batch: some Collection<RecordType> & Sendable) async {
         try? await exporter.export(batch)
     }
 }
 
-@_spi(Logging)
 extension BatchLogRecordProcessor where Clock == ContinuousClock {
     /// Create a batch log processor exporting log batches via the given log exporter.
     ///

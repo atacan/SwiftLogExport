@@ -6,9 +6,11 @@ import ServiceLifecycle
 /// ### Implementation Notes
 ///
 /// On shutdown, processors forwarding logs to an ``LogRecordExporter`` MUST shutdown that exporter.
-@_spi(Logging)
-public protocol LogRecordProcessor: Service & Sendable {
-    func onEmit(_ record: inout LogRecord)
+
+public protocol LogRecordProcessor<T>: Service & Sendable {
+    associatedtype T: LogRecord
+
+    func onEmit(_ record: inout T)
 
     /// Force log processors that batch logs to flush immediately.
     func forceFlush() async throws

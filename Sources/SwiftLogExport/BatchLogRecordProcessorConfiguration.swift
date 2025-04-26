@@ -1,5 +1,5 @@
 /// The configuration options for an ``BatchLogRecordProcessor``.
-@_spi(Logging)
+
 public struct BatchLogRecordProcessorConfiguration: Sendable {
     /// The maximum queue size.
     ///

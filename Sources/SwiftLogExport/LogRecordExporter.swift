@@ -1,9 +1,10 @@
-@_spi(Logging)
-public protocol LogRecordExporter: Sendable {
+public protocol LogRecordExporter<T>: Sendable {
+    associatedtype T: LogRecord
+
     /// Export the given batch of logs.
     ///
     /// - Parameter batch: A batch of logs to export.
-    func export(_ batch: some Collection<LogRecord> & Sendable) async throws
+    func export(_ batch: some Collection<T> & Sendable) async throws
 
     /// Force the log exporter to export any previously received logs as soon as possible.
     func forceFlush() async throws
