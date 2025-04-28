@@ -19,7 +19,7 @@ Create a struct or class that conforms to `LogExporter`. You'll need to implemen
 
 `LogRecord` is a protocol that represents the log entry that matches your use case.
 
-Then as usual create a `LogHandler` that uses the `BatchLogProcessor` and bootstrap the `LoggingSystem`.
+Then initialize a `LoggingHandler` with your `BatchLogRecordProcessor`, and use it to initialize a `Logger`.
 
 ### Examples
 
