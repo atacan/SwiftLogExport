@@ -21,6 +21,8 @@ Create a struct or class that conforms to `LogExporter`. You'll need to implemen
 
 Then initialize a `LoggingHandler` with your `BatchLogRecordProcessor`, and use it to initialize a `Logger`.
 
+Run the `BatchLogRecordProcessor` as it a `Service`.
+
 ### Examples
 
 - [Logging to Telegram](https://github.com/atacan/TelegramBotAPI/tree/main/Sources/LoggingToTelegram)
