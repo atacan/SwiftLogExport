@@ -1,5 +1,8 @@
 # SwiftLogExport
 
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fatacan%2FSwiftLogExport%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/atacan/SwiftLogExport)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fatacan%2FSwiftLogExport%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/atacan/SwiftLogExport)
+
 A generic exporter and processor framework for `swift-log` backends.
 
 This package provides the boilerplate for building robust `swift-log` backends. Simply integrate your specific exporting logic (e.g., calling a vendor API), and `SwiftLogExport` handles the complexities of buffering, non-blocking processing, and graceful shutdown.
