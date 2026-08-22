@@ -15,7 +15,9 @@
 public struct BatchLogRecordProcessorConfiguration: Sendable {
     /// The maximum queue size.
     ///
-    /// - Warning: After this size is reached log will be dropped.
+    /// - Note: Records are never dropped based on the queue size. When the number of buffered records reaches this
+    ///   size, the processor yields an explicit export tick so buffered records are handed to the exporter without
+    ///   waiting for ``scheduleDelay`` to elapse.
     public var maximumQueueSize: UInt
 
     /// The maximum delay between two consecutive log exports.
@@ -23,7 +25,8 @@ public struct BatchLogRecordProcessorConfiguration: Sendable {
 
     /// The maximum batch size of each export.
     ///
-    /// - Note: If the queue reaches this size, a batch will be exported even if ``scheduleDelay`` has not elapsed.
+    /// - Note: This only caps how many records are passed to a single ``LogRecordExporter/export(_:)`` call. It does
+    ///   not influence when exports are triggered and no records are ever dropped because of it.
     public var maximumExportBatchSize: UInt
 
     /// The duration a single export can run until it is cancelled.

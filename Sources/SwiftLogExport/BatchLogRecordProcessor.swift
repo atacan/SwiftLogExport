@@ -155,3 +155,29 @@ extension BatchLogRecordProcessor where Clock == ContinuousClock {
         self.init(exporter: exporter, configuration: configuration, clock: .continuous)
     }
 }
+
+extension BatchLogRecordProcessor {
+    /// The number of log records currently waiting in the buffer to be exported.
+    ///
+    /// - Warning: This member is part of the testing SPI of ``BatchLogRecordProcessor`` and is **not** part of the
+    ///   stable API surface. It may change or be removed in any release without prior notice.
+    ///
+    /// - Note: It exists so tests in downstream packages (which cannot access the `internal` `buffer` across package
+    ///   boundaries, even when importing with `@testable`) can observe how many records are buffered deterministically
+    ///   instead of relying on sleep-and-poll timing heuristics.
+    @_spi(Testing)
+    public var bufferedRecordCount: Int { buffer.count }
+
+    /// Returns copies of all log records currently waiting in the buffer to be exported, oldest first.
+    ///
+    /// - Returns: The buffered records, in the order they were received by ``onEmit(_:)``.
+    ///
+    /// - Warning: This member is part of the testing SPI of ``BatchLogRecordProcessor`` and is **not** part of the
+    ///   stable API surface. It may change or be removed in any release without prior notice.
+    ///
+    /// - Note: It exists so tests in downstream packages (which cannot access the `internal` `buffer` across package
+    ///   boundaries, even when importing with `@testable`) can inspect the buffered records deterministically instead
+    ///   of relying on sleep-and-poll timing heuristics.
+    @_spi(Testing)
+    public func snapshotOfBufferedRecords() -> [RecordType] { Array(buffer) }
+}
