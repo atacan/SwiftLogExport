@@ -25,5 +25,9 @@ public protocol LogRecordProcessor<T>: Service & Sendable {
     func onEmit(_ record: inout T)
 
     /// Force log processors that batch logs to flush immediately.
+    ///
+    /// For ``BatchLogRecordProcessor``, this is an ordered ingress barrier: it waits for all records accepted before
+    /// the barrier to be ingested and for every resulting batch export attempt to finish according to the processor's
+    /// best-effort policy. It throws ``LogRecordProcessorError/stopped`` when shutdown has already closed ingress.
     func forceFlush() async throws
 }
